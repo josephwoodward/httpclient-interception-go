@@ -2,34 +2,33 @@
 
 ## Introduction
 
-Based off of the [C# version](https://github.com/justeat/httpclient-interception), HttpClientInterception is a tool to help test HTTP services without the need to starting up a HTTP Server.
+Based off of the [C# version](https://github.com/justeat/httpclient-interception), HttpClientInterception is a tool to help test HTTP services without the need to start up an HTTP Server.
 
 ### Example
 
 ```go
-func Test_MethodGet(t *testing.T) {
+func ExampleMatch(t *testing.T) {
 
 	// Arrange
-	path := "/test/"
 	opts := NewInterceptorOptions()
 
 	builder := NewInterceptorBuilder(
-		ForGet(),
-		ForPath(path),
-		RespondWithStatus(http.StatusOK))
+    ForHost("public.je-apis.com"),
+    ForPath("/terms"),
+    RespondWithStatus(http.StatusOK))
 
-	builder.RegisterOptions(opts)
+    builder.RegisterOptions(opts)
 
-	client := opts.Client()
+    client := opts.Client()
 
-	// Act
-	response, _ := client.Get(path)
+    // Act
+    response, _ := client.Get("https://public.je-apis.com/terms")
 
-	// Assert
-	wanted := http.StatusOK
-	if response.StatusCode != wanted {
-		t.Errorf("Wanted status %v, got %v", wanted, response.Status)
-	}
+    // Assert
+    wanted := http.StatusOK
+    if response.StatusCode != wanted {
+        t.Errorf("Wanted status: %v, got: %v", wanted, response.Status)
+    }
 
 }
 
