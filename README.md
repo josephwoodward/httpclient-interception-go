@@ -9,10 +9,10 @@ Based off of the [C# version](https://github.com/justeat/httpclient-interception
 ```go
 func ExampleMatch(t *testing.T) {
 
-	// Arrange
-	opts := NewInterceptorOptions()
+    // Arrange
+    opts := NewInterceptorOptions()
 
-	builder := NewInterceptorBuilder(
+    builder := NewInterceptorBuilder(
     ForHost("public.je-apis.com"),
     ForPath("/terms"),
     RespondWithStatus(http.StatusOK))
