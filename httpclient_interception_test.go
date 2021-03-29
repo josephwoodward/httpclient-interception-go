@@ -36,6 +36,31 @@ func Test_Headers(t *testing.T) {
 
 }
 
+func Test_Host(t *testing.T) {
+
+	// Arrange
+	opts := NewInterceptorOptions()
+
+	builder := NewInterceptorBuilder(
+		ForHost("public.je-apis.com"),
+		ForPath("/terms"),
+		RespondWithStatus(http.StatusOK))
+
+	builder.RegisterOptions(opts)
+
+	client := opts.Client()
+
+	// Act
+	response, _ := client.Get("https://public.je-apis.com/terms")
+
+	// Assert
+	wanted := http.StatusOK
+	if response.StatusCode != wanted {
+		t.Errorf("Wanted status: %v, got: %v", wanted, response.Status)
+	}
+
+}
+
 func Test_Port(t *testing.T) {
 
 	// Arrange
