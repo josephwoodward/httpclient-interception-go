@@ -40,3 +40,28 @@ type hostMatcher string
 func (host hostMatcher) Match(r *http.Request) bool {
 	return r.URL.Host == string(host)
 }
+
+// headersMatcher
+type headersMatcher map[string][]string
+
+func (headers headersMatcher) Match(request *http.Request) bool {
+	if len(request.Header) == 0 {
+		return false
+	}
+
+	for headerKey, _ := range headers {
+		rHeaderValues := request.Header.Values(headerKey)
+		if len(rHeaderValues) == 0 {
+			return false
+		}
+
+		for _, value := range headers[headerKey] {
+			for i := 0; i < len(rHeaderValues); i++ {
+				if value != rHeaderValues[i] {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
