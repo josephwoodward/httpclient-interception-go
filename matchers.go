@@ -49,19 +49,46 @@ func (headers headersMatcher) Match(request *http.Request) bool {
 		return false
 	}
 
-	for headerKey, _ := range headers {
-		rHeaderValues := request.Header.Values(headerKey)
-		if len(rHeaderValues) == 0 {
-			return false
+	var matches = make(graph)
+	for key, headerValues := range headers {
+		requestHeaderValues := request.Header.Values(key)
+
+		if len(headerValues) == 0 || len(requestHeaderValues) == 0 {
+			return true
 		}
 
-		for _, value := range headers[headerKey] {
-			for i := 0; i < len(rHeaderValues); i++ {
-				if value != rHeaderValues[i] {
-					return false
+		for _, value := range headerValues {
+			for _, headerValue := range requestHeaderValues {
+				m := something{key: key, namespace: key + "." + value, given: headerValue, expected: value}
+				if value == headerValue {
+					m.matched = true
+					matches[key] = m
+					break
 				}
+
+				m.matched = false
+				matches[key] = m
 			}
 		}
+	}
+
+	return matches.isMatch()
+}
+
+type something struct {
+	key       string
+	matched   bool
+	expected  string
+	given     string
+	namespace string
+}
+
+type graph map[string]something
+
+func (g graph) isMatch() bool {
+
+	for s, s2 := range g {
+
 	}
 	return true
 }
