@@ -2,20 +2,25 @@ package httpclientinterception
 
 import "net/http"
 
+type interceptionOptions struct {
+	interceptorBuilder *interceptionBuilder
+	builders           []*configurationBuilder
+	PanicOnMissingRegistration
+	OnMissingRegistration
+}
+
+// NewInterceptorOptions creates a new interceptionOptions object used to configure your interceptor
+func NewInterceptorOptions() *interceptionOptions {
+	return &interceptionOptions{}
+}
+
 // PanicOnMissingRegistration causes HttpClientInterception to panic if not registration is found
 type PanicOnMissingRegistration bool
 
 // OnMissingRegistration is invoked before the request is handled by the http.Client when a registration is missing
 type OnMissingRegistration func(r *http.Request) *http.Response
 
-type registrationOptions struct {
-	interceptorBuilder *InterceptorBuilder
-	builders           []*configurationBuilder
-	PanicOnMissingRegistration
-	OnMissingRegistration
-}
-
-func (o *registrationOptions) Client() *http.Client {
+func (o *interceptionOptions) Client() *http.Client {
 	transport := &interceptorTransport{
 		RoundTripper:               http.DefaultTransport,
 		PanicOnMissingRegistration: o.PanicOnMissingRegistration,
@@ -25,11 +30,14 @@ func (o *registrationOptions) Client() *http.Client {
 	return &http.Client{Transport: transport}
 }
 
-func (o *registrationOptions) Transport() http.RoundTripper {
+func (o *interceptionOptions) Transport() http.RoundTripper {
 	return http.DefaultTransport
 }
 
-// NewInterceptorOptions
-func NewInterceptorOptions() *registrationOptions {
-	return &registrationOptions{}
+func (o *interceptionOptions) Handler() http.Handler {
+	return &interceptionHandler{
+		config:                     o.builders[0],
+		PanicOnMissingRegistration: o.PanicOnMissingRegistration,
+		OnMissingRegistration:      o.OnMissingRegistration,
+	}
 }

@@ -1,6 +1,8 @@
 package httpclientinterception
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type matcher interface {
 	Match(*http.Request) bool
@@ -87,8 +89,11 @@ type graph map[string]something
 
 func (g graph) isMatch() bool {
 
-	for s, s2 := range g {
-
+	for _, s2 := range g {
+		if s2.matched == false {
+			return false
+		}
 	}
+
 	return true
 }

@@ -4,14 +4,14 @@ import (
 	"net/http"
 )
 
-// NewInterceptorBuilder creates a new Interceptor Builder that allows you to configure requests to match.
-func NewInterceptorBuilder(o ...BuilderOption) *InterceptorBuilder {
+// NewInterceptorBuilder creates a new interceptionBuilder that allows you to configure requests to match
+func NewInterceptorBuilder(o ...BuilderOption) *interceptionBuilder {
 	builder := &configurationBuilder{}
 	for _, o := range o {
 		o(builder)
 	}
 
-	return &InterceptorBuilder{builder: builder}
+	return &interceptionBuilder{builder: builder}
 }
 
 type configurationBuilder struct {

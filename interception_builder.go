@@ -1,11 +1,11 @@
 package httpclientinterception
 
-type InterceptorBuilder struct {
+type interceptionBuilder struct {
 	builder *configurationBuilder
-	opts    []*registrationOptions
+	opts    []*interceptionOptions
 }
 
-func (i *InterceptorBuilder) RegisterOptions(options ...*registrationOptions) {
+func (i *interceptionBuilder) RegisterOptions(options ...*interceptionOptions) {
 	i.opts = options
 	for _, o := range options {
 		o.builders = append(o.builders, i.builder)

@@ -4,6 +4,7 @@ import (
 	. "httpclient-interception"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 )
@@ -338,4 +339,30 @@ func Test_MethodLiteral(t *testing.T) {
 		})
 	}
 
+}
+
+func TestServer(t *testing.T) {
+
+	opts := NewInterceptorOptions()
+	builder := NewInterceptorBuilder(
+		ForGet(),
+		ForPath("/test"),
+		RespondWithStatus(http.StatusOK))
+
+	builder.RegisterOptions(opts)
+
+	want := http.StatusOK
+	srv := httptest.NewServer(opts.Handler())
+	defer srv.Close()
+	client := srv.Client()
+
+	p := srv.URL + "/test"
+	got, err := client.Get(p)
+
+	if err != nil {
+		t.Errorf("Unexpected error on request: %s", err)
+	}
+	if got.StatusCode != want {
+		t.Errorf("want %v, got %v", want, got.Status)
+	}
 }
