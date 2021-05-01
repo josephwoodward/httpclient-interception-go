@@ -24,9 +24,9 @@ func (h *interceptionHandler) ServeHTTP(writer http.ResponseWriter, request *htt
 		writer.Header().Set("Status-Code", strconv.Itoa(h.config.Status))
 	}
 
-	//if h.OnMissingRegistration != nil {
-	//	response = h.OnMissingRegistration(request)
-	//}
+	if h.OnMissingRegistration != nil {
+		_ = h.OnMissingRegistration(request)
+	}
 
 	if h.PanicOnMissingRegistration {
 		panic("Missing registration")

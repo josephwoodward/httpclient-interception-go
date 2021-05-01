@@ -193,6 +193,27 @@ func Test_MethodDelete(t *testing.T) {
 
 }
 
+func Test_MissingRegistration(t *testing.T) {
+
+	// Arrange
+	opts := NewInterceptorOptions()
+	builder := NewInterceptorBuilder(ForGet(), ForPath("/test"), RespondWithStatus(http.StatusInternalServerError))
+
+	opts.OnMissingRegistration = func(r *http.Request) *http.Response {
+		return &http.Response{StatusCode: http.StatusTeapot}
+	}
+	builder.RegisterOptions(opts)
+	client := opts.Client()
+
+	// Act
+	response, _ := client.Get("http://localhost.com/test2")
+
+	wanted := http.StatusTeapot
+	if response.StatusCode != wanted {
+		t.Errorf("Wanted status: %v, got: %v", wanted, response.StatusCode)
+	}
+}
+
 func Test_MethodPost(t *testing.T) {
 
 	// Arrange

@@ -9,32 +9,34 @@ type interceptorTransport struct {
 	OnMissingRegistration
 }
 
-func (t *interceptorTransport) RoundTrip(request *http.Request) (*http.Response, error) {
+func (o *interceptorTransport) RoundTrip(request *http.Request) (*http.Response, error) {
 
-	pass := true
+	matched := true
 
-	for _, m := range t.config.matchers {
+	// TODO: Move into interceptorTransport as a method
+	for _, m := range o.config.matchers {
 		if !m.Match(request) {
-			pass = false
+			matched = false
 		}
 	}
 
 	var response *http.Response
-	if pass == true {
-		response = &http.Response{StatusCode: t.config.Status}
+
+	if matched == true {
+		response = &http.Response{StatusCode: o.config.Status}
 	}
 
-	if t.OnMissingRegistration != nil {
-		response = t.OnMissingRegistration(request)
+	if response == nil && o.OnMissingRegistration != nil {
+		response = o.OnMissingRegistration(request)
 	}
 
 	if response != nil {
 		return response, nil
 	}
 
-	if t.PanicOnMissingRegistration {
+	if o.PanicOnMissingRegistration {
 		panic("Missing registration")
 	}
 
-	return t.RoundTripper.RoundTrip(request)
+	return o.RoundTripper.RoundTrip(request)
 }
