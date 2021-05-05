@@ -12,9 +12,7 @@ Note: This project is still under development.
 
 import (
     . "httpclient-interception"
-    ...
 )
-
 
 func Test_ExampleMatch(t *testing.T) {
 
@@ -46,7 +44,13 @@ func Test_ExampleMatch(t *testing.T) {
 HttpClientInterception can also be used to create an `http.Handler` for servers:
 
 ```go
+import (
+. "httpclient-interception"
+)
+
 func Test_HttpServer(t *testing.T) {
+
+	// Arrange
 	opts := NewInterceptorOptions()
 	builder := NewInterceptorBuilder(
 		ForGet(),
@@ -60,11 +64,13 @@ func Test_HttpServer(t *testing.T) {
 	defer srv.Close()
 	client := srv.Client()
 
-	got, _ := client.Get(srv.URL + "/test")
+	// Act
+	response, _ := client.Get(srv.URL + "/test")
 
+	// Assert
     want := http.StatusOK	
-	if got.StatusCode != want {
-		t.Errorf("wanted: %v, got: %v", want, got.StatusCode)
+	if response.StatusCode != want {
+		t.Errorf("wanted: %v, but got: %v", want, response.StatusCode)
 	}
 }
 ```
