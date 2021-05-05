@@ -1,6 +1,8 @@
 package httpclientinterception
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type interceptorTransport struct {
 	RoundTripper http.RoundTripper

@@ -6,29 +6,31 @@ import (
 )
 
 type interceptionHandler struct {
-	config                     *configurationBuilder
-	PanicOnMissingRegistration PanicOnMissingRegistration
-	OnMissingRegistration      OnMissingRegistration
+	config configurationBuilder
+	PanicOnMissingRegistration
+	OnMissingRegistration
 }
 
-func (h *interceptionHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	pass := true
+func (o *interceptionHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
-	for _, m := range h.config.matchers {
+	matched := true
+
+	// TODO: Move into interception as a method
+	for _, m := range o.config.matchers {
 		if !m.Match(request) {
-			pass = false
+			matched = false
 		}
 	}
 
-	if pass == true {
-		writer.Header().Set("Status-Code", strconv.Itoa(h.config.Status))
+	if matched == true {
+		writer.Header().Set("Status-Code", strconv.Itoa(o.config.Status))
 	}
 
-	if h.OnMissingRegistration != nil {
-		_ = h.OnMissingRegistration(request)
+	if o.OnMissingRegistration != nil {
+		_ = o.OnMissingRegistration(request)
 	}
 
-	if h.PanicOnMissingRegistration {
+	if o.PanicOnMissingRegistration {
 		panic("Missing registration")
 	}
 }

@@ -202,6 +202,7 @@ func Test_MissingRegistration(t *testing.T) {
 	opts.OnMissingRegistration = func(r *http.Request) *http.Response {
 		return &http.Response{StatusCode: http.StatusTeapot}
 	}
+
 	builder.RegisterOptions(opts)
 	client := opts.Client()
 
@@ -362,8 +363,7 @@ func Test_MethodLiteral(t *testing.T) {
 
 }
 
-func TestServer(t *testing.T) {
-
+func Test_HttpServer(t *testing.T) {
 	opts := NewInterceptorOptions()
 	builder := NewInterceptorBuilder(
 		ForGet(),
@@ -377,13 +377,9 @@ func TestServer(t *testing.T) {
 	defer srv.Close()
 	client := srv.Client()
 
-	p := srv.URL + "/test"
-	got, err := client.Get(p)
+	got, _ := client.Get(srv.URL + "/test")
 
-	if err != nil {
-		t.Errorf("Unexpected error on request: %s", err)
-	}
-	if got.StatusCode != want {
-		t.Errorf("want %v, got %v", want, got.Status)
+	if want != got.StatusCode {
+		t.Errorf("wanted: %v, got: %v", want, got.Status)
 	}
 }

@@ -4,6 +4,8 @@
 
 Based off of the [C# version](https://github.com/justeat/httpclient-interception), HttpClientInterception is a tool to help test HTTP services without the need to start up an HTTP Server.
 
+Note: This project is still under development.
+
 ### Example
 
 ```go
@@ -14,7 +16,7 @@ import (
 )
 
 
-func ExampleMatch(t *testing.T) {
+func Test_ExampleMatch(t *testing.T) {
 
     // Arrange
     opts := NewInterceptorOptions()
@@ -39,4 +41,30 @@ func ExampleMatch(t *testing.T) {
 
 }
 
+```
+
+HttpClientInterception can also be used to create an `http.Handler` for servers:
+
+```go
+func Test_HttpServer(t *testing.T) {
+	opts := NewInterceptorOptions()
+	builder := NewInterceptorBuilder(
+		ForGet(),
+		ForPath("/test"),
+		RespondWithStatus(http.StatusOK))
+
+	builder.RegisterOptions(opts)
+
+	// Create a `http.Handler` for our test server
+	srv := httptest.NewServer(opts.Handler())
+	defer srv.Close()
+	client := srv.Client()
+
+	got, _ := client.Get(srv.URL + "/test")
+
+    want := http.StatusOK	
+	if got.StatusCode != want {
+		t.Errorf("wanted: %v, got: %v", want, got.StatusCode)
+	}
+}
 ```
