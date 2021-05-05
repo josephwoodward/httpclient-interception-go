@@ -1,4 +1,4 @@
-# HttpClient Interception for Go
+# HttpClientInterception for Go
 
 ### Introduction
 
@@ -45,7 +45,7 @@ HttpClientInterception can also be used to create an `http.Handler` for servers:
 
 ```go
 import (
-. "httpclient-interception"
+    . "httpclient-interception"
 )
 
 func Test_HttpServer(t *testing.T) {
@@ -67,8 +67,8 @@ func Test_HttpServer(t *testing.T) {
 	// Act
 	response, _ := client.Get(srv.URL + "/test")
 
-	// Assert
-    want := http.StatusOK	
+	// Assert 
+    want := http.StatusOK
 	if response.StatusCode != want {
 		t.Errorf("wanted: %v, but got: %v", want, response.StatusCode)
 	}
