@@ -37,7 +37,7 @@ func (o *interceptionOptions) Handler() http.Handler {
 	}
 }
 
-// PanicOnMissingRegistration causes HttpClientInterception to panic if no registration is found
+// PanicOnMissingRegistration causes HttpClientInterception to panic if no registration is matched
 type PanicOnMissingRegistration bool
 
 // OnMissingRegistration is invoked before the request is handled by the http.Client when a registration is missing

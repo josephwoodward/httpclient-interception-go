@@ -1,7 +1,9 @@
 package httpclientinterception
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 // NewInterceptorBuilder creates a new interceptionBuilder that allows you to configure requests to match
@@ -17,7 +19,6 @@ func NewInterceptorBuilder(o ...BuilderOption) *interceptionBuilder {
 type configurationBuilder struct {
 	Status   int
 	Host     string
-	Headers  []string
 	err      error
 	matchers []matcher
 }
@@ -88,10 +89,19 @@ func ForHost(host string) BuilderOption {
 	}
 }
 
-func ForHeaders(headers ...string) BuilderOption {
+func ForHeader(key string, values []string) {
+}
+
+func ForHeaders(key string, pairs ...string) BuilderOption {
 	return func(b *configurationBuilder) {
-		b.Headers = headers
+		m, err := mapFromPairsToString(pairs...)
+		b.err = err
+		b.addMatcher(headersMatcher(m))
 	}
+}
+
+func ForHeaders2(headers map[string][]string) {
+
 }
 
 func ForHttps() BuilderOption {
@@ -110,4 +120,33 @@ func RespondWithStatus(statusCode int) BuilderOption {
 	return func(b *configurationBuilder) {
 		b.Status = statusCode
 	}
+}
+
+// checkPairs returns the count of strings passed in, and an error if
+// the count is not an even number.
+func checkPairs(pairs ...string) (int, error) {
+	length := len(pairs)
+	if length%2 != 0 {
+		return length, fmt.Errorf(
+			"mux: number of parameters must be multiple of 2, got %v", pairs)
+	}
+	return length, nil
+}
+
+// mapFromPairsToString converts variadic string parameters to a
+// string to string map.
+func mapFromPairsToString(pairs ...string) (map[string][]string, error) {
+	length, err := checkPairs(pairs...)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string][]string, length/2)
+	for i := 0; i < length; i += 2 {
+		p := pairs[i+1]
+		s := strings.Split(p, ",")
+
+		fmt.Println(p)
+		m[pairs[i]] = s
+	}
+	return m, nil
 }

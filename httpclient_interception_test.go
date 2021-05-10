@@ -10,13 +10,12 @@ import (
 )
 
 func Test_Headers(t *testing.T) {
-	t.Skip()
 
 	// Arrange
 	opts := NewInterceptorOptions()
 
 	builder := NewInterceptorBuilder(
-		ForHeaders("Content-Type", "application/json"),
+		ForHeaders("Content-Type", "application/json text/html"),
 		RespondWithStatus(http.StatusOK))
 
 	builder.RegisterOptions(opts)
@@ -24,15 +23,21 @@ func Test_Headers(t *testing.T) {
 	client := opts.Client()
 
 	// Act
-	path, _ := url.Parse("/test/")
+	path, _ := url.Parse("http://localhost/test/")
 	request := &http.Request{URL: path}
-	request.Header.Set("Content-Type", "application/json")
+	request.Header = http.Header{}
+
+	request.Header = map[string][]string{
+		"Accept-Encoding": {"gzip, deflate"},
+		"Content-Type":    {"application/json", "text/html"},
+	}
+
 	response, _ := client.Do(request)
 
 	// Assert
 	wanted := http.StatusOK
 	if response.StatusCode != wanted {
-		t.Errorf("Wanted status: %v, got: %v", wanted, response.Status)
+		t.Errorf("Wanted to match headers but could not")
 	}
 
 }
@@ -360,6 +365,10 @@ func Test_MethodLiteral(t *testing.T) {
 			}
 		})
 	}
+
+}
+
+func Test_MultipleRequests(t *testing.T) {
 
 }
 

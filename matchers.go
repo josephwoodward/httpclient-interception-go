@@ -8,6 +8,9 @@ type matcher interface {
 	Match(*http.Request) bool
 }
 
+type matchMetadata struct {
+}
+
 // methodMatcher matches the request against the method value.
 type methodMatcher string
 
@@ -77,6 +80,7 @@ func (headers headersMatcher) Match(request *http.Request) bool {
 	return matches.isMatch()
 }
 
+// TODO: Not sure what to call this yet?
 type something struct {
 	key       string
 	matched   bool
