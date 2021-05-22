@@ -21,6 +21,7 @@ type configurationBuilder struct {
 	Host     string
 	err      error
 	matchers []matcher
+	Content  []byte
 }
 
 func (c *configurationBuilder) addMatcher(m matcher) {
@@ -89,16 +90,19 @@ func ForHost(host string) BuilderOption {
 	}
 }
 
-func ForHeader(key string, values []string) {
-}
-
-func ForHeaders(key string, pairs ...string) BuilderOption {
+func ForHeaders(headers map[string][]string) BuilderOption {
 	return func(b *configurationBuilder) {
-		m, err := mapFromPairsToString(pairs...)
-		b.err = err
-		b.addMatcher(headersMatcher(m))
+		b.addMatcher(headersMatcher(headers))
 	}
 }
+
+//func ForHeader(pairs ...string) BuilderOption {
+//	return func(b *configurationBuilder) {
+//		m, err := mapFromPairsToString(pairs...)
+//		b.err = err
+//		b.addMatcher(headersMatcher(m))
+//	}
+//}
 
 func ForHeaders2(headers map[string][]string) {
 
@@ -113,6 +117,12 @@ func ForHttps() BuilderOption {
 func ForHttp() BuilderOption {
 	return func(b *configurationBuilder) {
 		b.addMatcher(schemeMatcher("http"))
+	}
+}
+
+func RespondsWithJsonContent(content []byte) BuilderOption {
+	return func(b *configurationBuilder) {
+		b.Content = content
 	}
 }
 

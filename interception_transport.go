@@ -1,7 +1,9 @@
 package httpclientinterception
 
 import (
+	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type interceptorTransport struct {
@@ -25,7 +27,13 @@ func (o *interceptorTransport) RoundTrip(request *http.Request) (*http.Response,
 	var response *http.Response
 
 	if matched == true {
-		response = &http.Response{StatusCode: o.config.Status}
+
+		r := ioutil.NopCloser(strings.NewReader(string(o.config.Content))) // r type is io.ReadCloser
+
+		response = &http.Response{
+			StatusCode: o.config.Status,
+			Body:       r,
+		}
 	}
 
 	if response == nil && o.OnMissingRegistration != nil {

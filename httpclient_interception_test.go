@@ -1,11 +1,13 @@
 package httpclientinterception_test
 
 import (
+	"encoding/json"
 	. "httpclient-interception"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 )
 
@@ -15,7 +17,8 @@ func Test_Headers(t *testing.T) {
 	opts := NewInterceptorOptions()
 
 	builder := NewInterceptorBuilder(
-		ForHeaders("Content-Type", "application/json text/html"),
+		//TODO: Ordering is irrelevant?
+		ForHeaders(map[string][]string{"Content-Type": {"text/html", "application/json"}}),
 		RespondWithStatus(http.StatusOK))
 
 	builder.RegisterOptions(opts)
@@ -38,6 +41,50 @@ func Test_Headers(t *testing.T) {
 	wanted := http.StatusOK
 	if response.StatusCode != wanted {
 		t.Errorf("Wanted to match headers but could not")
+	}
+}
+
+func Test_ResponseBody(t *testing.T) {
+
+	// Arrange
+	b := &testBody{Page: 5, Name: "John Wick"}
+	content, _ := json.Marshal(b)
+
+	opts := NewInterceptorOptions()
+	builder := NewInterceptorBuilder(
+		ForHeaders(map[string][]string{"Content-Type": {"text/html", "application/json"}}),
+		RespondsWithJsonContent(content),
+		RespondWithStatus(http.StatusOK))
+
+	builder.RegisterOptions(opts)
+
+	client := opts.Client()
+
+	// Act
+	path, _ := url.Parse("http://localhost/test/")
+	request := &http.Request{URL: path}
+	request.Header = http.Header{}
+
+	request.Header = map[string][]string{
+		"Accept-Encoding": {"gzip, deflate"},
+		"Content-Type":    {"application/json", "text/html"},
+	}
+
+	r, _ := client.Do(request)
+
+	// Assert
+	wanted := http.StatusOK
+	if r.StatusCode != wanted {
+		t.Errorf("Wanted to match headers but could not")
+	}
+
+	var body []byte
+	_, err := r.Body.Read(body)
+	if err != nil {
+		t.Fatalf("Error parsing response body")
+	}
+	if reflect.DeepEqual(r.Body, body) {
+		t.Errorf("test")
 	}
 
 }
@@ -368,8 +415,43 @@ func Test_MethodLiteral(t *testing.T) {
 
 }
 
-func Test_MultipleRequests(t *testing.T) {
+func Test_MultipleRequestRegistrations(t *testing.T) {
 
+	// Arrange
+	opts := NewInterceptorOptions()
+
+	builder1 := NewInterceptorBuilder(
+		ForGet(),
+		ForHttp(),
+		ForPath("/builder1"),
+		RespondWithStatus(http.StatusForbidden))
+
+	builder2 := NewInterceptorBuilder(
+		ForGet(),
+		ForHttp(),
+		ForPath("/builder2"),
+		RespondWithStatus(http.StatusTeapot))
+
+	builder1.RegisterOptions(opts)
+	builder2.RegisterOptions(opts)
+
+	client := opts.Client()
+
+	// Act
+	path := "https://test.com"
+	response1, _ := client.Get(path + "/builder1")
+	response2, _ := client.Get(path + "/builder2")
+
+	// Assert
+	wanted := http.StatusForbidden
+	if response1.StatusCode != wanted {
+		t.Errorf("Response 1 wanted status %v, got %v", wanted, response1.Status)
+	}
+
+	wanted = http.StatusTeapot
+	if response2.StatusCode != wanted {
+		t.Errorf("Response 2 wanted status %v, got %v", wanted, response2.Status)
+	}
 }
 
 func Test_HttpServer(t *testing.T) {
@@ -391,4 +473,9 @@ func Test_HttpServer(t *testing.T) {
 	if want != got.StatusCode {
 		t.Errorf("wanted: %v, got: %v", want, got.Status)
 	}
+}
+
+type testBody struct {
+	Page int    `json:"page"`
+	Name string `json:"name"`
 }
