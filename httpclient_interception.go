@@ -78,6 +78,12 @@ func ForPath(path string) BuilderOption {
 	}
 }
 
+func ForQuery(query string) BuilderOption {
+	return func(b *configurationBuilder) {
+		b.addMatcher(pathMatcher(query))
+	}
+}
+
 func ForPort(port string) BuilderOption {
 	return func(b *configurationBuilder) {
 		b.addMatcher(portMatcher(port))

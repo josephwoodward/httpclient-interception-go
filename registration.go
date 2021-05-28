@@ -22,7 +22,7 @@ func (o *interceptionOptions) Client() *http.Client {
 
 		PanicOnMissingRegistration: o.PanicOnMissingRegistration,
 		OnMissingRegistration:      o.OnMissingRegistration,
-		config:                     *o.builders[0],
+		config:                     o.builders,
 	}
 
 	return &http.Client{Transport: t}

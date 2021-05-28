@@ -6,6 +6,23 @@ import (
 	"testing"
 )
 
+func Test_MatchQuery(t *testing.T) {
+
+	tt := []struct {
+		want string
+	}{
+		{"?test=1&test2=abc"},
+	}
+
+	for _, test := range tt {
+		url, _ := url.Parse("test.com/" + test.want)
+		r := &http.Request{URL: url}
+		if queryMatcher(test.want).Match(r) != true {
+			t.Errorf("Wanted: %v, but was not", test.want)
+		}
+	}
+}
+
 func Test_MatchMethod(t *testing.T) {
 
 	tt := []struct {

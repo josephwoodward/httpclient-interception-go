@@ -6,47 +6,85 @@ import (
 	"strings"
 )
 
-type interceptorTransport struct {
-	RoundTripper http.RoundTripper
-	config       configurationBuilder
-	PanicOnMissingRegistration
-	OnMissingRegistration
+type matchResult struct {
+	totalRegistrations int
+	matchers           regMatch
 }
 
-func (o *interceptorTransport) RoundTrip(request *http.Request) (*http.Response, error) {
+type regMatch struct {
+	mt      map[int][]matchType
+	success bool
+}
 
-	matched := true
+type matchType struct {
+	matched bool
+	matcher
+}
+
+type interceptorTransport struct {
+	RoundTripper http.RoundTripper
+	config       []*configurationBuilder
+	PanicOnMissingRegistration
+	OnMissingRegistration
+	result matchResult
+	winner []winner
+}
+
+type winner struct {
+	builder *configurationBuilder
+	success bool
+}
+
+func (t *interceptorTransport) getResult() *winner {
+	for _, w := range t.winner {
+		if w.success {
+			return &w
+		}
+	}
+
+	return nil
+}
+
+func (t *interceptorTransport) RoundTrip(request *http.Request) (*http.Response, error) {
+
+	t.winner = nil
 
 	// TODO: Move into interceptorTransport as a method
-	for _, m := range o.config.matchers {
-		if !m.Match(request) {
-			matched = false
+	// Loop through registrations
+	for _, builder := range t.config {
+
+		// Loop through matchers
+		winner := winner{success: true, builder: builder}
+		for _, m := range builder.matchers {
+			if !m.Match(request) {
+				winner.success = false
+			}
 		}
+		t.winner = append(t.winner, winner)
+
 	}
 
 	var response *http.Response
 
-	if matched == true {
-
-		r := ioutil.NopCloser(strings.NewReader(string(o.config.Content))) // r type is io.ReadCloser
-
+	result := t.getResult()
+	if result != nil {
 		response = &http.Response{
-			StatusCode: o.config.Status,
-			Body:       r,
+			StatusCode: result.builder.Status,
+			Body:       ioutil.NopCloser(strings.NewReader(string(result.builder.Content))), // r type is io.ReadCloser
 		}
 	}
 
-	if response == nil && o.OnMissingRegistration != nil {
-		response = o.OnMissingRegistration(request)
+	if response == nil && t.OnMissingRegistration != nil {
+		response = t.OnMissingRegistration(request)
 	}
 
 	if response != nil {
 		return response, nil
 	}
 
-	if o.PanicOnMissingRegistration {
+	if t.PanicOnMissingRegistration {
 		panic("Missing registration")
 	}
 
-	return o.RoundTripper.RoundTrip(request)
+	return t.RoundTripper.RoundTrip(request)
 }

@@ -1,7 +1,9 @@
 package httpclientinterception
 
 import (
+	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type matcher interface {
@@ -23,6 +25,23 @@ type pathMatcher string
 
 func (path pathMatcher) Match(r *http.Request) bool {
 	return r.URL.Path == string(path)
+}
+
+// queryMatcher matches the request against a query string.
+type queryMatcher string
+
+func (query queryMatcher) Match(r *http.Request) bool {
+	// TODO: Does order of query values matter?
+	vals, err := url.ParseQuery(string(query))
+	if err != nil {
+		return false
+	}
+
+	for _, el := range vals {
+		fmt.Println(el)
+	}
+
+	return false
 }
 
 // schemeMatcher matches the request against a path value.

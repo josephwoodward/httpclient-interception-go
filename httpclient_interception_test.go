@@ -165,6 +165,32 @@ func Test_Path(t *testing.T) {
 
 }
 
+func Test_Query(t *testing.T) {
+
+	// Arrange
+	path := "/test/"
+	opts := NewInterceptorOptions()
+
+	builder := NewInterceptorBuilder(
+		ForPath(path),
+		ForQuery("per_page=2"),
+		RespondWithStatus(http.StatusOK))
+
+	builder.RegisterOptions(opts)
+
+	client := opts.Client()
+
+	// Act
+	response, _ := client.Get(path)
+
+	// Assert
+	wanted := http.StatusOK
+	if response.StatusCode != wanted {
+		t.Errorf("Wanted status: %v, got: %v", wanted, response.Status)
+	}
+
+}
+
 func Test_MethodPut(t *testing.T) {
 
 	// Arrange
@@ -422,13 +448,13 @@ func Test_MultipleRequestRegistrations(t *testing.T) {
 
 	builder1 := NewInterceptorBuilder(
 		ForGet(),
-		ForHttp(),
+		ForHttps(),
 		ForPath("/builder1"),
 		RespondWithStatus(http.StatusForbidden))
 
 	builder2 := NewInterceptorBuilder(
 		ForGet(),
-		ForHttp(),
+		ForHttps(),
 		ForPath("/builder2"),
 		RespondWithStatus(http.StatusTeapot))
 
@@ -439,7 +465,10 @@ func Test_MultipleRequestRegistrations(t *testing.T) {
 
 	// Act
 	path := "https://test.com"
+	_, _ = client.Get(path + "/noop1")
 	response1, _ := client.Get(path + "/builder1")
+
+	_, _ = client.Get(path + "/noop2")
 	response2, _ := client.Get(path + "/builder2")
 
 	// Assert
