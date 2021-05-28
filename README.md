@@ -52,6 +52,7 @@ func Test_HttpServer(t *testing.T) {
 
 	// Arrange
 	opts := NewInterceptorOptions()
+
 	builder := NewInterceptorBuilder(
 		ForGet(),
 		ForPath("/test"),
