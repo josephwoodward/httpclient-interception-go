@@ -17,7 +17,7 @@ func Test_MatchQuery(t *testing.T) {
 	for _, test := range tt {
 		url, _ := url.Parse("test.com/" + test.want)
 		r := &http.Request{URL: url}
-		if queryMatcher(test.want).Match(r) != true {
+		if queryStringMatcher(test.want).Match(r) != true {
 			t.Errorf("Wanted: %v, but was not", test.want)
 		}
 	}

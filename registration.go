@@ -16,6 +16,12 @@ func NewInterceptorOptions() *interceptionOptions {
 	return &interceptionOptions{}
 }
 
+func (o *interceptionOptions) BeginScope() func() {
+	return func() {
+
+	}
+}
+
 func (o *interceptionOptions) Client() *http.Client {
 	t := &interceptorTransport{
 		RoundTripper: http.DefaultTransport,

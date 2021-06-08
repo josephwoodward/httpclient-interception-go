@@ -96,6 +96,12 @@ func ForHost(host string) BuilderOption {
 	}
 }
 
+func ForAnyHost() BuilderOption {
+	return func(b *configurationBuilder) {
+		b.addMatcher(hostMatcher("*"))
+	}
+}
+
 func ForHeaders(headers map[string][]string) BuilderOption {
 	return func(b *configurationBuilder) {
 		b.addMatcher(headersMatcher(headers))
@@ -109,10 +115,6 @@ func ForHeaders(headers map[string][]string) BuilderOption {
 //		b.addMatcher(headersMatcher(m))
 //	}
 //}
-
-func ForHeaders2(headers map[string][]string) {
-
-}
 
 func ForHttps() BuilderOption {
 	return func(b *configurationBuilder) {

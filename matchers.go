@@ -1,9 +1,7 @@
 package httpclientinterception
 
 import (
-	"fmt"
 	"net/http"
-	"net/url"
 )
 
 type matcher interface {
@@ -27,21 +25,26 @@ func (path pathMatcher) Match(r *http.Request) bool {
 	return r.URL.Path == string(path)
 }
 
-// queryMatcher matches the request against a query string.
-type queryMatcher string
+// queryStringMatcher matches the request against a query string.
+type queryStringMatcher string
 
-func (query queryMatcher) Match(r *http.Request) bool {
-	// TODO: Does order of query values matter?
-	vals, err := url.ParseQuery(string(query))
-	if err != nil {
-		return false
-	}
-
-	for _, el := range vals {
-		fmt.Println(el)
-	}
-
-	return false
+func (query queryStringMatcher) Match(r *http.Request) bool {
+	//// TODO: Does order of query values matter?
+	//// r should exist in `query`
+	//v, err := url.ParseQuery(string(query))
+	//if err != nil {
+	//	return true
+	//}
+	//
+	//rQueryString := r.URL.Query()
+	//
+	//for key, _ := range rQueryString {
+	//	if v != nil {
+	//		fmt.Println(v)
+	//	}
+	//}
+	//
+	return true
 }
 
 // schemeMatcher matches the request against a path value.
@@ -58,10 +61,14 @@ func (port portMatcher) Match(r *http.Request) bool {
 	return r.URL.Port() == string(port)
 }
 
-// hostMatcher matches the request again the host name.
+// hostMatcher matches the request against a host name.
 type hostMatcher string
 
 func (host hostMatcher) Match(r *http.Request) bool {
+	if string(host) == "*" {
+		return true
+	}
+
 	return r.URL.Host == string(host)
 }
 

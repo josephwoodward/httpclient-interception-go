@@ -275,7 +275,10 @@ func Test_MissingRegistration(t *testing.T) {
 
 	// Arrange
 	opts := NewInterceptorOptions()
-	builder := NewInterceptorBuilder(ForGet(), ForPath("/test"), RespondWithStatus(http.StatusInternalServerError))
+	builder := NewInterceptorBuilder(
+		ForGet(),
+		ForPath("/test"),
+		RespondWithStatus(http.StatusInternalServerError))
 
 	opts.OnMissingRegistration = func(r *http.Request) *http.Response {
 		return &http.Response{StatusCode: http.StatusTeapot}
@@ -291,6 +294,32 @@ func Test_MissingRegistration(t *testing.T) {
 	if response.StatusCode != wanted {
 		t.Errorf("Wanted status: %v, got: %v", wanted, response.StatusCode)
 	}
+}
+
+func Test_AnyHost(t *testing.T) {
+
+	// Arrange
+	opts := NewInterceptorOptions()
+	opts.PanicOnMissingRegistration = true
+
+	builder := NewInterceptorBuilder(
+		ForHttps(),
+		ForAnyHost(),
+		RespondWithStatus(http.StatusOK))
+
+	builder.RegisterOptions(opts)
+
+	client := opts.Client()
+
+	// Act
+	response, _ := client.Get("https://example.com/test")
+
+	// Assert
+	wanted := http.StatusOK
+	if response.StatusCode != wanted {
+		t.Errorf("Wanted status: %v, got: %v", wanted, response.Status)
+	}
+
 }
 
 func Test_MethodPost(t *testing.T) {
@@ -383,6 +412,38 @@ func Test_Http(t *testing.T) {
 		RespondWithStatus(http.StatusInternalServerError))
 
 	builder.RegisterOptions(opts)
+
+	client := opts.Client()
+
+	// Act
+	path := "https://test.com"
+	response, _ := client.Get(path)
+
+	// Assert
+	wanted := http.StatusOK
+	if response.StatusCode != wanted {
+		t.Errorf("Wanted status %v, got %v", wanted, response.Status)
+	}
+
+}
+
+// TODO - Add the ability to scope configurations
+func Test_ScopedInterceptions(t *testing.T) {
+
+	t.Skip()
+
+	// Arrange
+	opts := NewInterceptorOptions()
+
+	builder := NewInterceptorBuilder(
+		ForGet(),
+		ForHttp(),
+		RespondWithStatus(http.StatusInternalServerError))
+
+	builder.RegisterOptions(opts)
+
+	cleanUp := opts.BeginScope()
+	defer cleanUp()
 
 	client := opts.Client()
 
