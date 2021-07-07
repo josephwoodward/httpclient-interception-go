@@ -167,6 +167,8 @@ func Test_Path(t *testing.T) {
 
 func Test_Query(t *testing.T) {
 
+	t.Skipf("Needs to be implemented")
+
 	// Arrange
 	path := "/test/"
 	opts := NewInterceptorOptions()
@@ -427,10 +429,9 @@ func Test_Http(t *testing.T) {
 
 }
 
-// TODO - Add the ability to scope configurations
 func Test_ScopedInterceptions(t *testing.T) {
 
-	t.Skip()
+	t.Skip("Needs to be implemented")
 
 	// Arrange
 	opts := NewInterceptorOptions()
